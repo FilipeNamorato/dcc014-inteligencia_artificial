@@ -800,5 +800,4 @@ void Grafo::auxFechoTransitivoIndireto(int idNo, int noProcura, vector<int> &fec
         }
         aresta = aresta->getProxAresta();
     }
-    
 }
