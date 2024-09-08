@@ -62,6 +62,8 @@ bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino, vector<int
         int proxima_cidade = aresta->getNoDestino();
         if (find(caminho.begin(), caminho.end(), proxima_cidade) == caminho.end()) {
             if (backtracking(grafo, proxima_cidade, cidade_destino, caminho))
+                imprimirMetricas("Backtracking", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
+
                 return true;
         }
     }
@@ -85,6 +87,7 @@ bool buscaLargura(Grafo* grafo, int cidade_origem, int cidade_destino) {
         if (cidade_atual == cidade_destino) {
             profundidade_solucao = caminho_atual.size() - 1;
             caminho_solucao = caminho_atual;
+            imprimirMetricas("Busca em Largura", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
             return true; 
         }
 
@@ -105,6 +108,8 @@ bool buscaLargura(Grafo* grafo, int cidade_origem, int cidade_destino) {
             aresta = aresta->getProxAresta();
         }
     }
+
+    imprimirMetricas("Busca em Largura", {}, nos_expandidos, nos_visitados, 0, 0.0); // Caminho vazio se não encontrar solução
 
     return false; 
 }
@@ -134,22 +139,26 @@ bool buscaProfundidade(Grafo* grafo, int cidade_atual, int cidade_destino, vecto
             no_anterior = no_atual;
         }
 
+        imprimirMetricas("Busca em Profundidade", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao); // Impressão das métricas
         return true;
     }
 
-    if (profundidade_atual >= limite_profundidade)
-        return false; // Limite de profundidade atingido
+    if (profundidade_atual >= limite_profundidade) {
+        // Se atingir o limite de profundidade sem encontrar solução, imprime métricas com caminho vazio
+        imprimirMetricas("Busca em Profundidade (Limite Atingido)", {}, nos_expandidos, nos_visitados, 0, 0.0); 
+        return false; 
+    }
 
     No* no_atual = grafo->auxProcurarNoPeloId(cidade_atual);
     if (no_atual == nullptr)
         return false;
 
-    nos_expandidos++; // Incrementa o contador de nós expandidos
+    nos_expandidos++; 
     for (Aresta* aresta = no_atual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
         int proxima_cidade = aresta->getNoDestino();
         if (find(caminho.begin(), caminho.end(), proxima_cidade) == caminho.end()) {
             if (buscaProfundidade(grafo, proxima_cidade, cidade_destino, caminho, profundidade_atual + 1, limite_profundidade))
-                return true;
+                return true; // A impressão já foi feita na chamada recursiva que encontrou a solução
         }
     }
 
@@ -182,22 +191,39 @@ bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino) {
     visitado[cidade_origem] = true;
 
     while (!filaPrioridade.empty()) {
-        int cidadeAtual = filaPrioridade.top().second.first; //VERIFICAR
-        vector<int> caminhoAtual = filaPrioridade.top().second.second; //VERIFICAR
+        int cidadeAtual = filaPrioridade.top().second.first;
+        vector<int> caminhoAtual = filaPrioridade.top().second.second;
         filaPrioridade.pop();
+        nos_visitados++; // Incrementa o contador de nós visitados
 
         if (cidadeAtual == cidade_destino) {
-            cout << "Caminho encontrado: ";
-            for (int cidade : caminhoAtual)
-                cout << cidade << " ";
-            cout << endl;
+            profundidade_solucao = caminhoAtual.size() - 1;
+            caminho_solucao = caminhoAtual;
+
+            // Calcula o custo da solução 
+            No* no_anterior = nullptr;
+            for (int cidade : caminhoAtual) {
+                No* no_atual = grafo->auxProcurarNoPeloId(cidade);
+                if (no_anterior != nullptr) {
+                    for (Aresta* aresta = no_anterior->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
+                        if (aresta->getNoDestino() == cidade) {
+                            custo_solucao += aresta->getPeso();
+                            break;
+                        }
+                    }
+                }
+                no_anterior = no_atual;
+            }
+
+            imprimirMetricas("Busca Gulosa", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
             return true;
         }
 
         No* noAtual = grafo->auxProcurarNoPeloId(cidadeAtual);
-        if (noAtual == nullptr)  //ponterio nulo
+        if (noAtual == nullptr)  
             continue;     
 
+        nos_expandidos++; // Incrementa o contador de nós expandidos
         for (Aresta* aresta = noAtual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
             int proximaCidade = aresta->getNoDestino();
             if (!visitado[proximaCidade]) {
@@ -210,6 +236,8 @@ bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino) {
         }
     }
 
+    // Se não encontrar solução, imprime métricas com caminho vazio
+    imprimirMetricas("Busca Gulosa (Sem Solução)", {}, nos_expandidos, nos_visitados, 0, 0.0);
     return false;
 }
 //====================================================================================================
@@ -234,12 +262,14 @@ bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, float& c
         vector<int> caminhoAtual = filaPrioridade.top().second.second;
         float custoAtual = filaPrioridade.top().first - heuristicaPesoAresta(grafo, cidadeAtual, cidade_destino);
         filaPrioridade.pop();
-        nos_visitados++; //nós visit
+        nos_visitados++;
 
         if (cidadeAtual == cidade_destino) {
             custo_solucao = custoAtual;
             profundidade_solucao = caminhoAtual.size() - 1;
             caminho_solucao = caminhoAtual;
+
+            imprimirMetricas("Busca A*", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao); // Impressão das métricas
             return true;
         }
 
@@ -247,7 +277,7 @@ bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, float& c
         if (noAtual == nullptr)
             continue;
 
-        nos_expandidos++; //nós expan
+        nos_expandidos++;
         for (Aresta* aresta = noAtual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
             int proximaCidade = aresta->getNoDestino();
             if (!visitado[proximaCidade]) {
@@ -261,6 +291,8 @@ bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, float& c
         }
     }
 
+    // Se não encontrar solução, imprime métricas com caminho vazio
+    imprimirMetricas("Busca A* (Sem Solução)", {}, nos_expandidos, nos_visitados, 0, 0.0);
     return false;
 }
 //====================================================================================================
