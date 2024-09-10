@@ -11,8 +11,6 @@ using namespace std;
 using  std::string;
 using namespace std::chrono;
 
-
-
 int main(int argc, char *argv[]) {
     // Verifica se o arquivo existe e remove, se necessário
     if (remove("resultados_busca.csv") == 0);
@@ -35,8 +33,6 @@ int main(int argc, char *argv[]) {
         return 1; // Indica um erro na criação do grafo
     }
 
-
-
     //AJUSTAR CIDADE ORIGEM E DESTINO PARA SER MANUAL
     int cidade_origem = 0; 
     int cidade_destino = 4; 
@@ -45,7 +41,6 @@ int main(int argc, char *argv[]) {
     float custo_solucao_a_estrela;
 
     int opcao;
-
 
     cout<<endl<<"Escolha uma opção:"<<endl;
     cout<<"1 - Busca em backtraking"<<endl;
@@ -100,6 +95,13 @@ int main(int argc, char *argv[]) {
         double tempo_medio = (double)tempo_total / numExecs;
         cout<<"Tempo médio de execução (Busca em Largura): "<<tempo_medio<<" microssegundos"<<endl;
 
+        ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
+        if (arquivoSaida.is_open()) {
+            arquivoSaida << "TempoMedio "<< tempo_medio;
+        }else
+            cout<<"Erro ao abrir o arquivo";
+        arquivoSaida.close();
+
   } else if (opcao == 3) {
         // Executar a busca em Profundidade Limitada
         vector<long long> tempos_execucao;
@@ -119,6 +121,13 @@ int main(int argc, char *argv[]) {
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
         cout<<"Tempo médio de execução (Busca em Profundidade Limitada): "<<tempo_medio<<" microssegundos"<<endl;
+
+        ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
+        if (arquivoSaida.is_open()) {
+            arquivoSaida << "TempoMedio "<< tempo_medio;
+        }else
+            cout<<"Erro ao abrir o arquivo";
+        arquivoSaida.close();
 
     } else if (opcao == 4) {
         // Executar a busca Gulosa
@@ -140,6 +149,13 @@ int main(int argc, char *argv[]) {
         double tempo_medio = (double)tempo_total / numExecs;
         cout<<"Tempo médio de execução (Busca Gulosa): "<<tempo_medio<<" microssegundos"<<endl;
 
+        ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
+        if (arquivoSaida.is_open()) {
+            arquivoSaida << "TempoMedio "<< tempo_medio;
+        }else
+            cout<<"Erro ao abrir o arquivo";
+        arquivoSaida.close();
+
     } else if (opcao == 5) {
         // Executar a busca A*
         vector<long long> tempos_execucao;
@@ -159,6 +175,13 @@ int main(int argc, char *argv[]) {
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
         cout<<"Tempo médio de execução (Busca A*): "<<tempo_medio<<" microssegundos"<<endl;
+        
+        ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
+        if (arquivoSaida.is_open()) {
+            arquivoSaida << "TempoMedio "<< tempo_medio;
+        }else
+            cout<<"Erro ao abrir o arquivo";
+        arquivoSaida.close();
 
     }else if (opcao == 6){
         // Executar a busca IDA*
@@ -179,6 +202,13 @@ int main(int argc, char *argv[]) {
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
         cout<<"Tempo médio de execução (Busca IDA*): "<<tempo_medio<<" microssegundos"<<endl;
+        
+        ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
+        if (arquivoSaida.is_open()) {
+            arquivoSaida << "TempoMedio "<< tempo_medio;
+        }else
+            cout<<"Erro ao abrir o arquivo";
+        arquivoSaida.close();
 
     }else
         cout<<"Opção inválida!"<<endl;

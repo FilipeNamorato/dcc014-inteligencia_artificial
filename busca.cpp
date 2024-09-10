@@ -402,46 +402,46 @@ void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_exp
     cout << "Nós expandidos: " << nos_expandidos << endl;
     cout << "Nós visitados: " << nos_visitados << endl;
 
-    float fator_ramificacao_medio = 0;
+    float fatorRamificacaoMedio = 0;
     if (nos_expandidos != 0)
-        fator_ramificacao_medio = (float)nos_visitados / nos_expandidos;
+        fatorRamificacaoMedio = (float)nos_visitados / nos_expandidos;
         
-    cout << "Fator de ramificação médio: " << fator_ramificacao_medio << endl;
+    cout << "Fator de ramificação médio: " << fatorRamificacaoMedio << endl;
 }
 
 void escreverMetricas(const string& nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo) {
-    ofstream arquivo_saida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
+    ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
 
-    if (arquivo_saida.is_open()) {
+    if (arquivoSaida.is_open()) {
         // Escreve o cabeçalho apenas na primeira vez que a função é chamada
-        static bool primeira_chamada = true;
-        if (primeira_chamada) {
-            arquivo_saida << "Algoritmo,Caminho,Profundidade,Custo,NosExpandidos,NosVisitados,FatorRamificacaoMedio\n";
-            primeira_chamada = false;
+        static bool primeiraChamada = true;
+        if (primeiraChamada) {
+            arquivoSaida << "Algoritmo,Caminho,Profundidade,Custo,NosExpandidos,NosVisitados,FatorRamificacaoMedio\n";
+            primeiraChamada = false;
         }
 
         // Escreve os dados da busca no formato CSV
-        arquivo_saida << nome_busca << ",";
+        arquivoSaida << nome_busca << ",";
         if (!caminho.empty()) {
             for (int i = 0; i < caminho.size(); ++i) {
-                arquivo_saida << caminho[i];
+                arquivoSaida << caminho[i];
                 if (i < caminho.size() - 1) {
-                    arquivo_saida << "-"; // Separador para as cidades no caminho
+                    arquivoSaida << "-"; // Separador para as cidades no caminho
                 }
             }
-            arquivo_saida << "," << profundidade << "," << custo << ",";
+            arquivoSaida << "," << profundidade << "," << custo << ",";
         } else {
-            arquivo_saida << "null,null,null,"; 
+            arquivoSaida << "null,null,null,"; 
         }
-        arquivo_saida << nos_expandidos << "," << nos_visitados << ",";
+        arquivoSaida << nos_expandidos << "," << nos_visitados << ",";
 
-        float fator_ramificacao_medio = 0;
+        float fatorRamificacaoMedio = 0;
         if (nos_expandidos != 0) {
-            fator_ramificacao_medio = (float)nos_visitados / nos_expandidos;
+            fatorRamificacaoMedio = (float)nos_visitados / nos_expandidos;
         }
-        arquivo_saida << fator_ramificacao_medio << "\n";
+        arquivoSaida << fatorRamificacaoMedio << "\n";
 
-        arquivo_saida.close();
+        arquivoSaida.close();
     } else {
         cout << "Erro ao abrir o arquivo de saída!" << endl;
     }
