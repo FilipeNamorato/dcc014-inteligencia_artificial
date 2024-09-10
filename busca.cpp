@@ -8,6 +8,8 @@
 #include <vector>
 #include <algorithm> 
 #include <limits>
+#include <random>
+#include <tuple>
 
 #include "Grafo.h"
 #include "busca.h"
@@ -49,7 +51,7 @@ bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino, vector<int
             }
             no_anterior = no_atual;
         }
-        
+        imprimirMetricas("Backtracking", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
         return true;
     }
 
@@ -62,8 +64,6 @@ bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino, vector<int
         int proxima_cidade = aresta->getNoDestino();
         if (find(caminho.begin(), caminho.end(), proxima_cidade) == caminho.end()) {
             if (backtracking(grafo, proxima_cidade, cidade_destino, caminho))
-                imprimirMetricas("Backtracking", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
-
                 return true;
         }
     }
@@ -87,7 +87,7 @@ bool buscaLargura(Grafo* grafo, int cidade_origem, int cidade_destino) {
         if (cidade_atual == cidade_destino) {
             profundidade_solucao = caminho_atual.size() - 1;
             caminho_solucao = caminho_atual;
-            imprimirMetricas("Busca em Largura", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
+            imprimirMetricas("Busca em Largura", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, 0);
             return true; 
         }
 
@@ -188,14 +188,14 @@ bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino) {
     vector<bool> visitado(grafo->getOrdem() + 1, false);
     priority_queue<pair<float, pair<int, vector<int>>>, vector<pair<float, pair<int, vector<int>>>>, greater<>> filaPrioridade; 
     filaPrioridade.push({heuristicaPesoAresta(grafo, cidade_origem, cidade_destino), {cidade_origem, {cidade_origem}}});
-    visitado[cidade_origem] = true;
+    visitado[cidade_origem] = true; //vetor bool pra evitar ciclos
 
     while (!filaPrioridade.empty()) {
         int cidadeAtual = filaPrioridade.top().second.first;
         vector<int> caminhoAtual = filaPrioridade.top().second.second;
         filaPrioridade.pop();
-        nos_visitados++; // Incrementa o contador de nós visitados
-
+        nos_visitados++; // incrementa nós visitados
+        
         if (cidadeAtual == cidade_destino) {
             profundidade_solucao = caminhoAtual.size() - 1;
             caminho_solucao = caminhoAtual;
@@ -386,4 +386,64 @@ void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_exp
         fator_ramificacao_medio = (float)nos_visitados / nos_expandidos;
         
     cout << "Fator de ramificação médio: " << fator_ramificacao_medio << endl;
+}
+
+
+Grafo* cria_grafo(int tipo) {
+    Grafo* grafo = new Grafo(false, true, false); // Grafo não direcionado com pesos nas arestas
+
+    if (tipo == 0) {
+        // Grafo maior com cerca de 20 nós
+        vector<tuple<int, int, float>> conexoes = {
+            {0, 1, 7}, {0, 3, 2}, {1, 2, 3}, {1, 4, 5}, {2, 5, 8},
+            {3, 6, 4}, {4, 7, 6}, {5, 8, 2}, {6, 9, 9}, {7, 10, 1},
+            {8, 11, 3}, {9, 12, 7}, {10, 13, 5}, {11, 14, 4}, {12, 15, 6},
+            {13, 16, 2}, {14, 17, 8}, {15, 18, 3}, {16, 19, 1}, {17, 19, 7}
+        };
+
+        for (const auto& conexao : conexoes) {
+            int origem, destino;
+            float peso;
+            tie(origem, destino, peso) = conexao;
+            grafo->insertAresta(origem, 0, destino, 0, peso); 
+        }
+
+    } else if (tipo == 1) {
+        // Grafo denso com cerca de 10-15 nós
+        int num_nos = 12;
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_real_distribution<> dis(0.0, 1.0);
+
+        for (int i = 0; i < num_nos; ++i) {
+            for (int j = i + 1; j < num_nos; ++j) {
+                if (dis(gen) < 0.7) { // Probabilidade de 70% de criar uma aresta
+                    float peso = 1.0 + dis(gen) * 9.0; // Peso entre 1.0 e 10.0
+                    grafo->insertAresta(i, 0, j, 0, peso);
+                }
+            }
+        }
+
+    } else if (tipo == 2) {
+        // Grafo esparso com cerca de 10-15 nós
+        int num_nos = 15;
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_real_distribution<> dis(0.0, 1.0);
+
+        for (int i = 0; i < num_nos; ++i) {
+            for (int j = i + 1; j < num_nos; ++j) {
+                if (dis(gen) < 0.3) { // Probabilidade de 30% de criar uma aresta
+                    float peso = 1.0 + dis(gen) * 9.0; // Peso entre 1.0 e 10.0
+                    grafo->insertAresta(i, 0, j, 0, peso);
+                }
+            }
+        }
+
+    } else {
+        cout << "Tipo de grafo inválido. Escolha 'maior', 'denso' ou 'esparso'." << endl;
+        return nullptr;
+    }
+
+    return grafo;
 }

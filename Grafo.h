@@ -60,7 +60,8 @@ public:
     vector<int> vetNoPeso();
     string fechoTransitivoIndireto(int noProcura);
     void auxFechoTransitivoIndireto(int idNo, int noProcura, vector<int> &fechoTranInd, bool *nosVisitados);
-    
+    Grafo *cria_grafo(int tipo);
+
     //--- Caracteristica do Grafo ---
     int getNumAresta();
     No *getNoRaiz();

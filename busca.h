@@ -17,3 +17,5 @@ float dfs_limitada_com_custo(Grafo* grafo, int cidade_atual, int cidade_destino,
 
 //impressão
 void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo);
+
+Grafo* cria_grafo(int tipo);
