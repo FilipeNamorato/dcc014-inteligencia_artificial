@@ -69,6 +69,7 @@ bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino, vector<int
     }
 
     caminho.pop_back();
+    imprimirMetricas("Backtraking", {}, nos_expandidos, nos_visitados, 0, 0.0); // Caminho vazio se não encontrar solução
     return false;
 }
 
@@ -243,7 +244,7 @@ bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino) {
 //====================================================================================================
 //                                              A*
 //====================================================================================================
-// Função para encontrar o caminho usando a busca A* (com cálculo de custos e métricas)
+// Função para encontrar o caminho usando a busca A*
 bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, float& custo_solucao) {
     // Reinicializar as métricas para esta busca
     nos_expandidos = 0;
@@ -388,6 +389,9 @@ void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_exp
     cout << "Fator de ramificação médio: " << fator_ramificacao_medio << endl;
 }
 
+//====================================================================================================
+//                                          Função gerar tipos de mapas diferentes
+//====================================================================================================
 
 Grafo* cria_grafo(int tipo) {
     Grafo* grafo = new Grafo(false, true, false); // Grafo não direcionado com pesos nas arestas
@@ -409,8 +413,10 @@ Grafo* cria_grafo(int tipo) {
         }
 
     } else if (tipo == 1) {
-        // Grafo denso com cerca de 10-15 nós
+      
         int num_nos = 12;
+
+        //variávies para randomizar e possibilitar que crie de forma aleatória as cidades
         random_device rd;
         mt19937 gen(rd());
         uniform_real_distribution<> dis(0.0, 1.0);
@@ -425,8 +431,9 @@ Grafo* cria_grafo(int tipo) {
         }
 
     } else if (tipo == 2) {
-        // Grafo esparso com cerca de 10-15 nós
+        // Grafo esparso 
         int num_nos = 15;
+        //variávies para randomizar e possibilitar que crie de forma aleatória as cidades
         random_device rd;
         mt19937 gen(rd());
         uniform_real_distribution<> dis(0.0, 1.0);
@@ -441,7 +448,7 @@ Grafo* cria_grafo(int tipo) {
         }
 
     } else {
-        cout << "Tipo de grafo inválido. Escolha 'maior', 'denso' ou 'esparso'." << endl;
+        cout << "Tipo de grafo inválido." << endl;
         return nullptr;
     }
 
