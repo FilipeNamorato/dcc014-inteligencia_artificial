@@ -16,7 +16,7 @@
 
 
 using namespace std;
-using namespace std::chrono;
+using namespace chrono;
 
 // Variáveis globais para armazenar as métricas (declaradas apenas uma vez)
 int nos_expandidos = 0;
@@ -51,7 +51,7 @@ bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino, vector<int
             }
             no_anterior = no_atual;
         }
-        imprimirMetricas("Backtracking", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
+
         return true;
     }
 
@@ -64,12 +64,15 @@ bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino, vector<int
         int proxima_cidade = aresta->getNoDestino();
         if (find(caminho.begin(), caminho.end(), proxima_cidade) == caminho.end()) {
             if (backtracking(grafo, proxima_cidade, cidade_destino, caminho))
+                imprimirMetricas("Backtracking", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
+                escreverMetricas("Backtracking", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
                 return true;
         }
     }
 
     caminho.pop_back();
     imprimirMetricas("Backtraking", {}, nos_expandidos, nos_visitados, 0, 0.0); // Caminho vazio se não encontrar solução
+    escreverMetricas("Backtraking", {}, nos_expandidos, nos_visitados, 0, 0.0); // Caminho vazio se não encontrar solução
     return false;
 }
 
@@ -89,6 +92,8 @@ bool buscaLargura(Grafo* grafo, int cidade_origem, int cidade_destino) {
             profundidade_solucao = caminho_atual.size() - 1;
             caminho_solucao = caminho_atual;
             imprimirMetricas("Busca em Largura", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, 0);
+            escreverMetricas("Busca em Largura", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, 0);
+
             return true; 
         }
 
@@ -111,6 +116,7 @@ bool buscaLargura(Grafo* grafo, int cidade_origem, int cidade_destino) {
     }
 
     imprimirMetricas("Busca em Largura", {}, nos_expandidos, nos_visitados, 0, 0.0); // Caminho vazio se não encontrar solução
+    escreverMetricas("Busca em Largura", {}, nos_expandidos, nos_visitados, 0, 0.0); // Caminho vazio se não encontrar solução
 
     return false; 
 }
@@ -141,12 +147,14 @@ bool buscaProfundidade(Grafo* grafo, int cidade_atual, int cidade_destino, vecto
         }
 
         imprimirMetricas("Busca em Profundidade", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao); // Impressão das métricas
+        escreverMetricas("Busca em Profundidade", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao); 
         return true;
     }
 
     if (profundidade_atual >= limite_profundidade) {
         // Se atingir o limite de profundidade sem encontrar solução, imprime métricas com caminho vazio
         imprimirMetricas("Busca em Profundidade (Limite Atingido)", {}, nos_expandidos, nos_visitados, 0, 0.0); 
+        escreverMetricas("Busca em Profundidade (Limite Atingido)", {}, nos_expandidos, nos_visitados, 0, 0.0); 
         return false; 
     }
 
@@ -217,6 +225,7 @@ bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino) {
             }
 
             imprimirMetricas("Busca Gulosa", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
+            escreverMetricas("Busca Gulosa", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao);
             return true;
         }
 
@@ -239,18 +248,21 @@ bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino) {
 
     // Se não encontrar solução, imprime métricas com caminho vazio
     imprimirMetricas("Busca Gulosa (Sem Solução)", {}, nos_expandidos, nos_visitados, 0, 0.0);
+    escreverMetricas("Busca Gulosa (Sem Solução)", {}, nos_expandidos, nos_visitados, 0, 0.0);
+
     return false;
 }
 //====================================================================================================
 //                                              A*
 //====================================================================================================
 // Função para encontrar o caminho usando a busca A*
-bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, float& custo_solucao) {
+bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino) {
     // Reinicializar as métricas para esta busca
     nos_expandidos = 0;
     nos_visitados = 0;
     profundidade_solucao = 0;
     caminho_solucao.clear();
+    custo_solucao = 0;
 
     vector<bool> visitado(grafo->getOrdem() + 1, false);
     priority_queue<pair<float, pair<int, vector<int>>>, vector<pair<float, pair<int, vector<int>>>>, greater<>> filaPrioridade;
@@ -271,6 +283,8 @@ bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, float& c
             caminho_solucao = caminhoAtual;
 
             imprimirMetricas("Busca A*", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao); // Impressão das métricas
+            escreverMetricas("Busca A*", caminho_solucao, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao); // Impressão das métricas
+
             return true;
         }
 
@@ -294,6 +308,8 @@ bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, float& c
 
     // Se não encontrar solução, imprime métricas com caminho vazio
     imprimirMetricas("Busca A* (Sem Solução)", {}, nos_expandidos, nos_visitados, 0, 0.0);
+    escreverMetricas("Busca A* (Sem Solução)", {}, nos_expandidos, nos_visitados, 0, 0.0);
+
     return false;
 }
 //====================================================================================================
@@ -352,10 +368,14 @@ bool buscaIDAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino) {
 
         if (custo_excedido == custo_solucao) 
             imprimirMetricas("IDA*",caminho,nos_expandidos,nos_visitados, profundidade_solucao, custo_solucao);
+            escreverMetricas("IDA*",caminho,nos_expandidos,nos_visitados, profundidade_solucao, custo_solucao);
+
             return true; // soluçao encontrada 
 
         if (custo_excedido == numeric_limits<float>::infinity())
-            imprimirMetricas("IDA*",caminho,nos_expandidos,nos_visitados, profundidade_solucao, custo_solucao); 
+            imprimirMetricas("IDA*",caminho,nos_expandidos,nos_visitados, profundidade_solucao, custo_solucao);
+            escreverMetricas("IDA*",caminho,nos_expandidos,nos_visitados, profundidade_solucao, custo_solucao);
+ 
             return false; // nao existe solução
 
         limite_custo = custo_excedido; 
@@ -389,11 +409,49 @@ void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_exp
     cout << "Fator de ramificação médio: " << fator_ramificacao_medio << endl;
 }
 
+void escreverMetricas(const string& nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo) {
+    ofstream arquivo_saida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
+
+    if (arquivo_saida.is_open()) {
+        // Escreve o cabeçalho apenas na primeira vez que a função é chamada
+        static bool primeira_chamada = true;
+        if (primeira_chamada) {
+            arquivo_saida << "Algoritmo,Caminho,Profundidade,Custo,NosExpandidos,NosVisitados,FatorRamificacaoMedio\n";
+            primeira_chamada = false;
+        }
+
+        // Escreve os dados da busca no formato CSV
+        arquivo_saida << nome_busca << ",";
+        if (!caminho.empty()) {
+            for (int i = 0; i < caminho.size(); ++i) {
+                arquivo_saida << caminho[i];
+                if (i < caminho.size() - 1) {
+                    arquivo_saida << "-"; // Separador para as cidades no caminho
+                }
+            }
+            arquivo_saida << "," << profundidade << "," << custo << ",";
+        } else {
+            arquivo_saida << "null,null,null,"; 
+        }
+        arquivo_saida << nos_expandidos << "," << nos_visitados << ",";
+
+        float fator_ramificacao_medio = 0;
+        if (nos_expandidos != 0) {
+            fator_ramificacao_medio = (float)nos_visitados / nos_expandidos;
+        }
+        arquivo_saida << fator_ramificacao_medio << "\n";
+
+        arquivo_saida.close();
+    } else {
+        cout << "Erro ao abrir o arquivo de saída!" << endl;
+    }
+}
+
 //====================================================================================================
 //                                          Função gerar tipos de mapas diferentes
 //====================================================================================================
 
-Grafo* cria_grafo(int tipo) {
+Grafo* criaGrafo(int tipo) {
     Grafo* grafo = new Grafo(false, true, false); // Grafo não direcionado com pesos nas arestas
 
     if (tipo == 0) {

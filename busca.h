@@ -6,7 +6,7 @@ bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino, std::vecto
 bool buscaLargura(Grafo* grafo, int cidade_origem, int cidade_destino);
 bool buscaProfundidade(Grafo* grafo, int cidade_atual, int cidade_destino, std::vector<int>& caminho, int profundidade_atual, int limite_profundidade);
 bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino);
-bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, float& custo_solucao);
+bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino);
 bool buscaIDAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino);
 
 // heurística para peso da aresta direta para o destino (se existir)
@@ -17,5 +17,7 @@ float dfs_limitada_com_custo(Grafo* grafo, int cidade_atual, int cidade_destino,
 
 //impressão
 void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo);
+void escreverMetricas(const string& nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo);
 
-Grafo* cria_grafo(int tipo);
+//auxiliares
+Grafo* criaGrafo(int tipo);
