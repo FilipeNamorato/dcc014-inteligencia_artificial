@@ -4,7 +4,7 @@
 // Declarações das funções de busca
 bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino, std::vector<int>& caminho);
 bool buscaLargura(Grafo* grafo, int cidade_origem, int cidade_destino);
-bool buscaProfundidade(Grafo* grafo, int cidade_atual, int cidade_destino, std::vector<int>& caminho, int profundidade_atual, int limite_profundidade);
+bool buscaProfundidade(Grafo* grafo, int cidade_atual, int cidade_destino, std::vector<int>& caminho, float& custo_acumulado, int profundidade_atual, int limite_profundidade);
 bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino);
 bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino);
 bool buscaIDAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino);

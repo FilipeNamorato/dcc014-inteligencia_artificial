@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     int limite_profundidade = 5; // Defina o limite de profundidade desejado
     vector<int> caminho;
     float custo_solucao_a_estrela;
-
+    float custo_acumulado;
     int opcao;
 
     cout<<endl<<"Escolha uma opção:"<<endl;
@@ -50,9 +50,9 @@ int main(int argc, char *argv[]) {
     cout<<"5 - Busca A*"<<endl;
     cout<<"6 - Busca IDA*"<<endl;
     cout<<"Sua escolha: ";
-    std::cin >> opcao;
+    cin >> opcao;
 
-    int numExecs = 5;
+    int numExecs = 1;
 
     if (opcao == 1) {
         // Executar o Backtracking
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
         vector<long long> tempos_execucao;
         for (int i = 0; i < numExecs; ++i) {
             auto inicio = high_resolution_clock::now();
-            if (buscaProfundidade(grafo_cidades, cidade_origem, cidade_destino, caminho, 0, limite_profundidade)) {
+            if (buscaProfundidade(grafo_cidades, cidade_origem, cidade_destino, caminho, custo_acumulado, 0, limite_profundidade)) {
                 cout<<"\nCaminho encontrado"<<endl;
             } else {
                 cout<<"\nNão existe caminho entre as cidades (ou o limite de profundidade foi atingido)."<<endl;
