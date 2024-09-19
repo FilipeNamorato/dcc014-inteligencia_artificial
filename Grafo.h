@@ -53,14 +53,9 @@ public:
 
     //--- Funcoes do Grafo---
     void print();
-    Grafo *getVerticeInduzido(vector<int> listaNos);
-    string fechoTransitivoDireto(int idNo);
-    void auxFechoTransitivoDireto(int idNo, bool *nosVisitados);
     vector<vector<float>> matrizArestaPeso();
     vector<int> vetNoPeso();
-    string fechoTransitivoIndireto(int noProcura);
-    void auxFechoTransitivoIndireto(int idNo, int noProcura, vector<int> &fechoTranInd, bool *nosVisitados);
-    Grafo *cria_grafo(int tipo);
+
 
     //--- Caracteristica do Grafo ---
     int getNumAresta();
