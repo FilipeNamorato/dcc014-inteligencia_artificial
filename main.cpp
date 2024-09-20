@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
             caminho_solucao.clear();
             auto inicio = high_resolution_clock::now();
             if (backtracking(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado" << endl;
+                
             } else {
                 cout << "\nNão existe caminho entre as cidades (usando Backtracking)." << endl;
             }
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < numExecs; ++i) {
             auto inicio = high_resolution_clock::now();
             if (buscaLargura(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado" << endl;
+                
             } else {
                 cout << "\nNão existe caminho entre as cidades (usando Busca em Largura)." << endl;
             }
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
 
             // Corrigido: passando todos os parâmetros esperados para buscaProfundidade
             if (buscaProfundidade(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, custo_acumulado, 0, limite_profundidade, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado" << endl;
+                
                 // Você pode exibir ou usar os resultados como necessário
             } else {
                 cout << "\nNão existe caminho entre as cidades (ou o limite de profundidade foi atingido)." << endl;
@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < numExecs; ++i) {
             auto inicio = high_resolution_clock::now();
             if (buscaGulosa(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado" << endl;
+                
             } else {
                 cout << "\nNão existe caminho entre as cidades (usando Busca Gulosa)." << endl;
             }
@@ -216,7 +216,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < numExecs; ++i) {
             auto inicio = high_resolution_clock::now();
             if (buscaAEstrela(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado" << endl;
+                
             } else {
                 cout << "\nNão existe caminho entre as cidades (usando Busca A*)." << endl;
             }
@@ -280,7 +280,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < numExecs; ++i) {
             caminho_solucao.clear();
             if (backtracking(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado (Backtracking)" << endl;
+                
             } else {
                 cout << "\nNão existe caminho entre as cidades (Backtracking)." << endl;
             }
@@ -309,7 +309,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < numExecs; ++i) {
             caminho_solucao.clear();
             if (buscaLargura(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado (Largura)" << endl;
+                
             } else {
                 cout << "\nNão existe caminho entre as cidades (Largura)." << endl;
             }
@@ -338,7 +338,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < numExecs; ++i) {
             caminho_solucao.clear();
             if (buscaProfundidade(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, custo_acumulado, 0, limite_profundidade, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado (Profundidade Limitada)" << endl;
+                
             } else {
                 cout << "\nNão existe caminho entre as cidades (Profundidade Limitada)." << endl;
             }
@@ -367,7 +367,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < numExecs; ++i) {
             caminho_solucao.clear();
             if (buscaGulosa(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado (Gulosa)" << endl;
+                
             } else {
                 cout << "\nNão existe caminho entre as cidades (Gulosa)." << endl;
             }
@@ -396,7 +396,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < numExecs; ++i) {
             caminho_solucao.clear();
             if (buscaAEstrela(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado (A*)" << endl;
+                
             } else {
                 cout << "\nNão existe caminho entre as cidades (A*)." << endl;
             }
@@ -420,12 +420,19 @@ int main(int argc, char *argv[]) {
         nos_visitados = 0;
         profundidade_solucao = 0;
         custo_solucao = 0.0;
+        int total_nos_expandidos = 0;
+        int total_nos_visitados = 0;
+        int total_profundidade_solucao = 0; // ou pode manter o máximo
+        float total_custo_solucao = 0.0;
 
         inicio = high_resolution_clock::now();
         for (int i = 0; i < numExecs; ++i) {
             caminho_solucao.clear();
             if (buscaIDAEstrela(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "\nCaminho encontrado (IDA*)" << endl;
+                   total_nos_expandidos += nos_expandidos;
+                    total_nos_visitados += nos_visitados;
+                    total_profundidade_solucao = max(total_profundidade_solucao, profundidade_solucao); // Mantém o máximo
+                    total_custo_solucao += custo_solucao;
             } else {
                 cout << "\nNão existe caminho entre as cidades (IDA*)." << endl;
             }
@@ -438,7 +445,7 @@ int main(int argc, char *argv[]) {
         // Salvar no CSV
         arquivoSaida.open("resultados_busca.csv", ios::app);
         if (arquivoSaida.is_open()) {
-            escreveCSV("IDA*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV("IDA*",arquivoSaida, total_nos_expandidos, total_nos_visitados, total_profundidade_solucao, total_custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         }else 
             cout << "Erro ao abrir o arquivo." << endl;

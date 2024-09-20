@@ -26,7 +26,7 @@ using namespace chrono;
 bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino,
     std::vector<int>& caminho, int *nos_expandidos, int *nos_visitados,
     int *profundidade_solucao, float *custo_solucao, std::vector<int>& caminho_solucao){
-    *nos_visitados++;
+    *nos_visitados+=1;
     caminho.push_back(cidade_atual);
 
     if (cidade_atual == cidade_destino) {
@@ -39,7 +39,7 @@ bool backtracking(Grafo* grafo, int cidade_atual, int cidade_destino,
     if (no_atual == nullptr) // ponteiro nulo
         return false;
 
-    *nos_expandidos++;
+    *nos_expandidos+=1;
     for (Aresta* aresta = no_atual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
         int proxima_cidade = aresta->getNoDestino();
         if (find(caminho.begin(), caminho.end(), proxima_cidade) == caminho.end()) {
@@ -69,7 +69,7 @@ bool buscaLargura(Grafo* grafo, int cidade_origem, int cidade_destino,
         int cidade_atual = fila.front().first;
         vector<int> caminho_atual = fila.front().second;
         fila.pop();
-        *nos_visitados++;
+        *nos_visitados+=1;
 
         if (cidade_atual == cidade_destino) {
             *profundidade_solucao = caminho_atual.size() - 1;
@@ -80,7 +80,7 @@ bool buscaLargura(Grafo* grafo, int cidade_origem, int cidade_destino,
         No* no_atual = grafo->auxProcurarNoPeloId(cidade_atual);
         if (no_atual == nullptr) continue; 
 
-        *nos_expandidos++;
+        *nos_expandidos+=1;
         for (Aresta* aresta = no_atual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
             int proxima_cidade = aresta->getNoDestino();
             if (!visitado[proxima_cidade]) {
@@ -103,7 +103,7 @@ bool buscaProfundidade(Grafo* grafo, int cidade_atual, int cidade_destino,
     int limite_profundidade, int *nos_expandidos, int *nos_visitados, 
     int *profundidade_solucao, float *custo_solucao, std::vector<int>& caminho_solucao){
     
-    *nos_visitados++;
+    *nos_visitados+=1;
     caminho.push_back(cidade_atual);
 
     if (cidade_atual == cidade_destino) {
@@ -120,7 +120,7 @@ bool buscaProfundidade(Grafo* grafo, int cidade_atual, int cidade_destino,
     if (no_atual == nullptr)
         return false;
 
-    *nos_expandidos++; 
+    *nos_expandidos+=1; 
     for (Aresta* aresta = no_atual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
         int proxima_cidade = aresta->getNoDestino();
         float peso_aresta = aresta->getPeso();
@@ -175,7 +175,7 @@ bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino,
         int cidadeAtual = filaPrioridade.top().second.first;
         vector<int> caminhoAtual = filaPrioridade.top().second.second;
         filaPrioridade.pop();
-        *nos_visitados++; // incrementa nós visitados
+        *nos_visitados+=1; // incrementa nós visitados
         
         if (cidadeAtual == cidade_destino) {
             *profundidade_solucao = caminhoAtual.size() - 1;
@@ -203,7 +203,7 @@ bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino,
         if (noAtual == nullptr)  
             continue;     
 
-        *nos_expandidos++; // Incrementa o contador de nós expandidos
+        *nos_expandidos+=1; // Incrementa o contador de nós expandidos
         for (Aresta* aresta = noAtual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
             int proximaCidade = aresta->getNoDestino();
             if (!visitado[proximaCidade]) {
@@ -238,7 +238,7 @@ bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino,
         vector<int> caminhoAtual = filaPrioridade.top().second.second;
         float fAtual = filaPrioridade.top().first;
         filaPrioridade.pop();
-        *nos_visitados++;
+        *nos_visitados+=1;
 
         if (cidadeAtual == cidade_destino) {
             *custo_solucao = custoAtual[cidadeAtual];
@@ -250,7 +250,7 @@ bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino,
 
         if (visitado[cidadeAtual]) continue;
         visitado[cidadeAtual] = true;
-        *nos_expandidos++;
+        *nos_expandidos+=1;
 
         No* noAtual = grafo->auxProcurarNoPeloId(cidadeAtual);
         if (noAtual == nullptr) continue;
@@ -281,7 +281,7 @@ float dfs_limitada_com_custo(Grafo* grafo, int cidade_atual, int cidade_destino,
     int *nos_expandidos, int *nos_visitados, int *profundidade_solucao, 
     float *custo_solucao, std::vector<int>& caminho_solucao) {
 
-    *nos_visitados++;
+    *nos_visitados += 1;
     caminho.push_back(cidade_atual);
 
     float f = custo_atual + heuristicaMenorPesoArestaAdjacente(grafo, cidade_atual, cidade_destino); 
@@ -290,17 +290,22 @@ float dfs_limitada_com_custo(Grafo* grafo, int cidade_atual, int cidade_destino,
         *profundidade_solucao = caminho.size() - 1;
         caminho_solucao = caminho;
         *custo_solucao = custo_atual;
+        cout<<endl<<"Custo atual:"<<custo_atual<<endl;
         return custo_atual; // Solução encontrada
     }
 
-    if (f > limite_custo) 
+    if (f > limite_custo) {
+        caminho.pop_back(); // Restaurar o caminho antes de sair
         return f; // Custo estimado excede o limite, poda o ramo
+    }
 
     No* no_atual = grafo->auxProcurarNoPeloId(cidade_atual);
-    if (no_atual == nullptr)
+    if (no_atual == nullptr) {
+        caminho.pop_back(); // Restaurar o caminho antes de sair
         return numeric_limits<float>::infinity(); // Cidade não encontrada
+    }
 
-    *nos_expandidos++;
+    *nos_expandidos += 1; // Atualizar apenas aqui
     float minimo_custo_excedido = numeric_limits<float>::infinity();
 
     for (Aresta* aresta = no_atual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
@@ -325,11 +330,10 @@ float dfs_limitada_com_custo(Grafo* grafo, int cidade_atual, int cidade_destino,
 bool buscaIDAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, 
     int *nos_expandidos, int *nos_visitados, int *profundidade_solucao, 
     float *custo_solucao, std::vector<int>& caminho_solucao) {
+
     float limite_custo = heuristicaMenorPesoArestaAdjacente(grafo, cidade_origem, cidade_destino); 
 
     while (true) {
-        *nos_expandidos = 0;
-        *nos_visitados = 0;
         vector<int> caminho;
         float custo_excedido = dfs_limitada_com_custo(grafo, cidade_origem, cidade_destino, caminho_solucao, 
             0.0f, limite_custo, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao);
@@ -345,7 +349,6 @@ bool buscaIDAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino,
         limite_custo = custo_excedido; 
     }
 }
-
 //====================================================================================================
 //                                          impressão métricas
 //====================================================================================================
