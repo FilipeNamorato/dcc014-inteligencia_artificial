@@ -11,6 +11,35 @@ using namespace std;
 using  std::string;
 using namespace std::chrono;
 
+
+void escreveCSV(string nomeMetodo, ofstream &arquivoSaida, int nos_expandidos, int nos_visitados, 
+                int profundidade_solucao, float custo_solucao, const vector<int>& caminho_solucao, 
+                float tempo_medio){
+    
+    // Escreve cabeçalho se necessário (opcional, apenas na primeira vez)
+    arquivoSaida << "Algoritmo,Nos_Expandidos,Nos_Visitados,Profundidade_Solucao,Custo_Solucao,Caminho_Solucao,Tempo_Medio" << endl;
+
+    // Escreve os dados
+    arquivoSaida << nomeMetodo << ","
+                 << nos_expandidos << ","
+                 << nos_visitados << ","
+                 << profundidade_solucao << ","
+                 << custo_solucao << ",\"";
+
+    // Escreve o caminho (os valores do vector)
+    for (size_t i = 0; i < caminho_solucao.size(); ++i) {
+        arquivoSaida << caminho_solucao[i];
+        if (i < caminho_solucao.size() - 1) {
+            arquivoSaida << " ";  // separador de caminho
+        }
+    }
+
+    // Fecha aspas do caminho e continua a escrever os outros valores
+    arquivoSaida << "\"," << tempo_medio << endl;
+}
+
+
+
 int main(int argc, char *argv[]) {
     // Verifica se o arquivo existe e remove, se necessário
     if (remove("resultados_busca.csv") == 0);
@@ -48,10 +77,11 @@ int main(int argc, char *argv[]) {
     cout << "4 - Busca Gulosa" << endl;
     cout << "5 - Busca A*" << endl;
     cout << "6 - Busca IDA*" << endl;
+    cout << "7 - Todos os métodos" << endl;
     cout << "Sua escolha: ";
     cin >> opcao;
 
-    int numExecs = 1;
+    int numExecs = 100;
 
     // Parâmetros adicionais
     int nos_expandidos = 0;
@@ -64,8 +94,8 @@ int main(int argc, char *argv[]) {
         // Executar o Backtracking
         vector<long long> tempos_execucao;
         for (int i = 0; i < numExecs; ++i) {
+            caminho_solucao.clear();
             auto inicio = high_resolution_clock::now();
-
             if (backtracking(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
                 cout << "\nCaminho encontrado" << endl;
             } else {
@@ -77,18 +107,19 @@ int main(int argc, char *argv[]) {
             tempos_execucao.push_back(duracao.count());
         }
 
+
         // Calcular e imprimir a média dos tempos de execução
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
         cout << "Tempo médio de execução (Backtracking): " << tempo_medio << " microssegundos" << endl;
-
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
-        if (arquivoSaida.is_open()) {
-            arquivoSaida << "Backtracking," << tempo_medio << endl;
-        } else {
-            cout << "Erro ao abrir o arquivo" << endl;
-        }
-        arquivoSaida.close();
+
+        if (arquivoSaida.is_open()){
+            escreveCSV("Backtracking", arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        }else
+            cout << "Erro ao abrir o arquivo." << endl;
+         
 
     } else if (opcao == 2) {
         // Executar a busca em Largura
@@ -104,19 +135,18 @@ int main(int argc, char *argv[]) {
             auto duracao = duration_cast<microseconds>(fim - inicio);
             tempos_execucao.push_back(duracao.count());
         }
-
         // Calcular e imprimir a média dos tempos de execução
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
-        cout << "Tempo médio de execução (Busca em Largura): " << tempo_medio << " microssegundos" << endl;
-
+        cout << "Tempo médio de execução (Backtracking): " << tempo_medio << " microssegundos" << endl;
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
-        if (arquivoSaida.is_open()) {
-            arquivoSaida << "Largura," << tempo_medio << endl;
-        } else {
-            cout << "Erro ao abrir o arquivo" << endl;
-        }
-        arquivoSaida.close();
+
+        if (arquivoSaida.is_open()){
+            escreveCSV("Busca em Largura",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        }else
+            cout << "Erro ao abrir o arquivo." << endl;
+         
 
     }else if (opcao == 3) {
         // Executar a busca em Profundidade Limitada
@@ -137,18 +167,19 @@ int main(int argc, char *argv[]) {
             tempos_execucao.push_back(duracao.count());
         }
 
+
+
         // Calcular e imprimir a média dos tempos de execução
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
-        cout << "Tempo médio de execução (Busca em Profundidade Limitada): " << tempo_medio << " microssegundos" << endl;
-
+        cout << "Tempo médio de execução (Backtracking): " << tempo_medio << " microssegundos" << endl;
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
-        if (arquivoSaida.is_open()) {
-            arquivoSaida << "ProfundidadeLimitada," << tempo_medio << endl;
-        } else {
-            cout << "Erro ao abrir o arquivo" << endl;
-        }
-        arquivoSaida.close();
+
+        if (arquivoSaida.is_open()){
+            escreveCSV("Busca em Profundidade Limitada",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        }else
+            cout << "Erro ao abrir o arquivo." << endl;
 
     } else if (opcao == 4) {
         // Executar a busca Gulosa
@@ -165,18 +196,19 @@ int main(int argc, char *argv[]) {
             tempos_execucao.push_back(duracao.count());
         }
 
+
+
         // Calcular e imprimir a média dos tempos de execução
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
-        cout << "Tempo médio de execução (Busca Gulosa): " << tempo_medio << " microssegundos" << endl;
-
+        cout << "Tempo médio de execução (Backtracking): " << tempo_medio << " microssegundos" << endl;
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
-        if (arquivoSaida.is_open()) {
-            arquivoSaida << "Gulosa," << tempo_medio << endl;
-        } else {
-            cout << "Erro ao abrir o arquivo" << endl;
-        }
-        arquivoSaida.close();
+
+        if (arquivoSaida.is_open()){
+            escreveCSV("Busca Gulosa",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        }else
+            cout << "Erro ao abrir o arquivo." << endl;
 
     } else if (opcao == 5) {
         // Executar a busca A*
@@ -193,18 +225,18 @@ int main(int argc, char *argv[]) {
             tempos_execucao.push_back(duracao.count());
         }
 
+
         // Calcular e imprimir a média dos tempos de execução
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
-        cout << "Tempo médio de execução (Busca A*): " << tempo_medio << " microssegundos" << endl;
-
+        cout << "Tempo médio de execução (Backtracking): " << tempo_medio << " microssegundos" << endl;
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
-        if (arquivoSaida.is_open()) {
-            arquivoSaida << "AEstrela," << tempo_medio << endl;
-        } else {
-            cout << "Erro ao abrir o arquivo" << endl;
-        }
-        arquivoSaida.close();
+
+        if (arquivoSaida.is_open()){
+            escreveCSV("A*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        }else
+            cout << "Erro ao abrir o arquivo." << endl;
 
     } else if (opcao == 6) {
         // Executar a busca IDA*
@@ -221,18 +253,196 @@ int main(int argc, char *argv[]) {
             tempos_execucao.push_back(duracao.count());
         }
 
+
+
         // Calcular e imprimir a média dos tempos de execução
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
-        cout << "Tempo médio de execução (Busca IDA*): " << tempo_medio << " microssegundos" << endl;
-
+        cout << "Tempo médio de execução (Backtracking): " << tempo_medio << " microssegundos" << endl;
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
-        if (arquivoSaida.is_open()) {
-            arquivoSaida << "IDAEstrela," << tempo_medio << endl;
-        } else {
-            cout << "Erro ao abrir o arquivo" << endl;
+
+        if (arquivoSaida.is_open()){
+            escreveCSV("IDA*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        }else
+            cout << "Erro ao abrir o arquivo." << endl;
+        // Adicionando nova opção para executar todos os algoritmos em sequência
+        
+        // Adicionando nova opção para executar todos os algoritmos em sequência
+    }else if (opcao == 7) {
+        // Backtracking
+        nos_expandidos = 0;
+        nos_visitados = 0;
+        profundidade_solucao = 0;
+        custo_solucao = 0.0;
+        
+        auto inicio = high_resolution_clock::now();
+        for (int i = 0; i < numExecs; ++i) {
+            caminho_solucao.clear();
+            if (backtracking(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
+                cout << "\nCaminho encontrado (Backtracking)" << endl;
+            } else {
+                cout << "\nNão existe caminho entre as cidades (Backtracking)." << endl;
+            }
         }
-        arquivoSaida.close();
+        auto fim = high_resolution_clock::now();
+        auto duracao = duration_cast<microseconds>(fim - inicio);
+        double tempo_medio = duracao.count() / (double)numExecs;
+        cout << "Tempo médio de execução (Backtracking): " << tempo_medio << " microssegundos" << endl;
+
+        // Salvar no CSV
+        ofstream arquivoSaida("resultados_busca.csv", ios::app);
+        if (arquivoSaida.is_open()) {
+            escreveCSV("Backtracking",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        } else {
+            cout << "Erro ao abrir o arquivo." << endl;
+        }
+
+        // Busca em Largura
+        nos_expandidos = 0;
+        nos_visitados = 0;
+        profundidade_solucao = 0;
+        custo_solucao = 0.0;
+
+        inicio = high_resolution_clock::now();
+        for (int i = 0; i < numExecs; ++i) {
+            caminho_solucao.clear();
+            if (buscaLargura(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, caminho_solucao)) {
+                cout << "\nCaminho encontrado (Largura)" << endl;
+            } else {
+                cout << "\nNão existe caminho entre as cidades (Largura)." << endl;
+            }
+        }
+        fim = high_resolution_clock::now();
+        duracao = duration_cast<microseconds>(fim - inicio);
+        tempo_medio = duracao.count() / (double)numExecs;
+        cout << "Tempo médio de execução (Largura): " << tempo_medio << " microssegundos" << endl;
+
+        // Salvar no CSV
+        arquivoSaida.open("resultados_busca.csv", ios::app);
+        if (arquivoSaida.is_open()) {
+            escreveCSV("Busca em Largura", arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        } else {
+            cout << "Erro ao abrir o arquivo." << endl;
+        }
+
+        // Busca em Profundidade Limitada
+        nos_expandidos = 0;
+        nos_visitados = 0;
+        profundidade_solucao = 0;
+        custo_solucao = 0.0;
+
+        inicio = high_resolution_clock::now();
+        for (int i = 0; i < numExecs; ++i) {
+            caminho_solucao.clear();
+            if (buscaProfundidade(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, custo_acumulado, 0, limite_profundidade, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
+                cout << "\nCaminho encontrado (Profundidade Limitada)" << endl;
+            } else {
+                cout << "\nNão existe caminho entre as cidades (Profundidade Limitada)." << endl;
+            }
+        }
+        fim = high_resolution_clock::now();
+        duracao = duration_cast<microseconds>(fim - inicio);
+        tempo_medio = duracao.count() / (double)numExecs;
+        cout << "Tempo médio de execução (Profundidade Limitada): " << tempo_medio << " microssegundos" << endl;
+
+        // Salvar no CSV
+        arquivoSaida.open("resultados_busca.csv", ios::app);
+        if (arquivoSaida.is_open()) {
+            escreveCSV("Busca em Profundidade Limitada",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        } else {
+            cout << "Erro ao abrir o arquivo." << endl;
+        }
+
+        // Busca Gulosa
+        nos_expandidos = 0;
+        nos_visitados = 0;
+        profundidade_solucao = 0;
+        custo_solucao = 0.0;
+
+        inicio = high_resolution_clock::now();
+        for (int i = 0; i < numExecs; ++i) {
+            caminho_solucao.clear();
+            if (buscaGulosa(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
+                cout << "\nCaminho encontrado (Gulosa)" << endl;
+            } else {
+                cout << "\nNão existe caminho entre as cidades (Gulosa)." << endl;
+            }
+        }
+        fim = high_resolution_clock::now();
+        duracao = duration_cast<microseconds>(fim - inicio);
+        tempo_medio = duracao.count() / (double)numExecs;
+        cout << "Tempo médio de execução (Gulosa): " << tempo_medio << " microssegundos" << endl;
+
+        // Salvar no CSV
+        arquivoSaida.open("resultados_busca.csv", ios::app);
+        if (arquivoSaida.is_open()) {
+            escreveCSV("Busca Gulosa" ,arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        } else {
+            cout << "Erro ao abrir o arquivo." << endl;
+        }
+
+        // Busca A*
+        nos_expandidos = 0;
+        nos_visitados = 0;
+        profundidade_solucao = 0;
+        custo_solucao = 0.0;
+
+        inicio = high_resolution_clock::now();
+        for (int i = 0; i < numExecs; ++i) {
+            caminho_solucao.clear();
+            if (buscaAEstrela(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
+                cout << "\nCaminho encontrado (A*)" << endl;
+            } else {
+                cout << "\nNão existe caminho entre as cidades (A*)." << endl;
+            }
+        }
+        fim = high_resolution_clock::now();
+        duracao = duration_cast<microseconds>(fim - inicio);
+        tempo_medio = duracao.count() / (double)numExecs;
+        cout << "Tempo médio de execução (A*): " << tempo_medio << " microssegundos" << endl;
+
+        // Salvar no CSV
+        arquivoSaida.open("resultados_busca.csv", ios::app);
+        if (arquivoSaida.is_open()) {
+            escreveCSV("A*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        } else {
+            cout << "Erro ao abrir o arquivo." << endl;
+        }
+
+        // Busca IDA*
+        nos_expandidos = 0;
+        nos_visitados = 0;
+        profundidade_solucao = 0;
+        custo_solucao = 0.0;
+
+        inicio = high_resolution_clock::now();
+        for (int i = 0; i < numExecs; ++i) {
+            caminho_solucao.clear();
+            if (buscaIDAEstrela(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
+                cout << "\nCaminho encontrado (IDA*)" << endl;
+            } else {
+                cout << "\nNão existe caminho entre as cidades (IDA*)." << endl;
+            }
+        }
+        fim = high_resolution_clock::now();
+        duracao = duration_cast<microseconds>(fim - inicio);
+        tempo_medio = duracao.count() / (double)numExecs;
+        cout << "Tempo médio de execução (IDA*): " << tempo_medio << " microssegundos" << endl;
+
+        // Salvar no CSV
+        arquivoSaida.open("resultados_busca.csv", ios::app);
+        if (arquivoSaida.is_open()) {
+            escreveCSV("IDA*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        }else 
+            cout << "Erro ao abrir o arquivo." << endl;
+        
 
     } else {
         cout << "Opção inválida!" << endl;
