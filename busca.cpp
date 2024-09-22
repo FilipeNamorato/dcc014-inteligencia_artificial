@@ -146,8 +146,15 @@ float heuristicaMenorPesoArestaAdjacente(Grafo* grafo, int cidade_atual, int cid
     if (no_atual == nullptr)
         return numeric_limits<float>::infinity(); // Cidade não encontrada
 
-    float menor_peso = numeric_limits<float>::infinity();
+    // Verifica se há uma aresta direta para a cidade destino
+    for (Aresta* aresta = no_atual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
+        if (aresta->getNoDestino() == cidade_destino) {
+            return aresta->getPeso(); // Retorna o peso da aresta direta
+        }
+    }
 
+    // Se não houver aresta direta, retorna o menor peso entre as arestas adjacentes
+    float menor_peso = numeric_limits<float>::infinity();
     for (Aresta* aresta = no_atual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
         float peso = aresta->getPeso();
         if (peso < menor_peso)
@@ -156,7 +163,6 @@ float heuristicaMenorPesoArestaAdjacente(Grafo* grafo, int cidade_atual, int cid
 
     return menor_peso;
 }
-
 
 
 //====================================================================================================
@@ -275,80 +281,86 @@ bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino,
 //====================================================================================================
 //                                              IDA*
 //====================================================================================================
-// funçao recursiva busca em profundidade limitada com custo
-float dfs_limitada_com_custo(Grafo* grafo, int cidade_atual, int cidade_destino, 
-    std::vector<int>& caminho, float custo_atual, float limite_custo, 
-    int *nos_expandidos, int *nos_visitados, int *profundidade_solucao, 
-    float *custo_solucao, std::vector<int>& caminho_solucao) {
+
+bool buscaIDAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, 
+                     int *nos_expandidos, int *nos_visitados, int *profundidade_solucao, 
+                     float *custo_solucao, std::vector<int>& caminho_solucao) {
+
+    float limite = heuristicaMenorPesoArestaAdjacente(grafo, cidade_origem, cidade_destino); 
+    vector<int> caminho = {cidade_origem};
+    float custo_acumulado = 0.0;
+
+    while (true) {
+        float temp = buscaIDAEstrelaAux(grafo, cidade_origem, cidade_destino, caminho, 0, limite, 
+                                        custo_acumulado, nos_expandidos, nos_visitados, profundidade_solucao, 
+                                        custo_solucao, caminho_solucao);
+        if (temp == -1) { 
+            return true; // Solução encontrada
+        }
+        if (temp == numeric_limits<float>::infinity()) {
+            return false; // Não há solução
+        }
+        limite = temp; 
+    }
+}
+
+float buscaIDAEstrelaAux(Grafo* grafo, int cidade_atual, int cidade_destino, 
+                        vector<int>& caminho, int profundidade_atual, float limite, 
+                        float& custo_acumulado, int *nos_expandidos, int *nos_visitados,
+                        int *profundidade_solucao, float *custo_solucao, vector<int>& caminho_solucao) {
 
     *nos_visitados += 1;
-    caminho.push_back(cidade_atual);
 
-    float f = custo_atual + heuristicaMenorPesoArestaAdjacente(grafo, cidade_atual, cidade_destino); 
+    float f = custo_acumulado + heuristicaMenorPesoArestaAdjacente(grafo, cidade_atual, cidade_destino);
+
+    if (f > limite) {
+        return f; 
+    }
 
     if (cidade_atual == cidade_destino) {
-        *profundidade_solucao = caminho.size() - 1;
+        *profundidade_solucao = profundidade_atual;
+        *custo_solucao = custo_acumulado;
         caminho_solucao = caminho;
-        *custo_solucao = custo_atual;
-        cout<<endl<<"Custo atual:"<<custo_atual<<endl;
-        return custo_atual; // Solução encontrada
+        return -1; 
     }
 
-    if (f > limite_custo) {
-        caminho.pop_back(); // Restaurar o caminho antes de sair
-        return f; // Custo estimado excede o limite, poda o ramo
-    }
+    float min = numeric_limits<float>::infinity();
 
     No* no_atual = grafo->auxProcurarNoPeloId(cidade_atual);
     if (no_atual == nullptr) {
-        caminho.pop_back(); // Restaurar o caminho antes de sair
-        return numeric_limits<float>::infinity(); // Cidade não encontrada
+        return numeric_limits<float>::infinity(); 
     }
 
-    *nos_expandidos += 1; // Atualizar apenas aqui
-    float minimo_custo_excedido = numeric_limits<float>::infinity();
+    *nos_expandidos += 1;
 
     for (Aresta* aresta = no_atual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
         int proxima_cidade = aresta->getNoDestino();
-        if (find(caminho.begin(), caminho.end(), proxima_cidade) == caminho.end()) {
-            float novo_custo = custo_atual + aresta->getPeso();
-            float custo_excedido = dfs_limitada_com_custo(grafo, proxima_cidade, cidade_destino, caminho, 
-                novo_custo, limite_custo, nos_expandidos, nos_visitados, profundidade_solucao, 
-                custo_solucao, caminho_solucao);
-
-            if (custo_excedido != numeric_limits<float>::infinity()) // Solução encontrada
-                return custo_excedido;
-
-            minimo_custo_excedido = min(minimo_custo_excedido, custo_excedido);
+        if (find(caminho.begin(), caminho.end(), proxima_cidade) != caminho.end()) {
+            continue; 
         }
+
+        caminho.push_back(proxima_cidade);
+        custo_acumulado += aresta->getPeso();
+
+        float temp = buscaIDAEstrelaAux(grafo, proxima_cidade, cidade_destino, caminho, profundidade_atual + 1, limite,
+                                        custo_acumulado, nos_expandidos, nos_visitados, profundidade_solucao, 
+                                        custo_solucao, caminho_solucao);
+
+        if (temp == -1) {
+            return -1; 
+        }
+
+        if (temp < min) {
+            min = temp;
+        }
+
+        caminho.pop_back();
+        custo_acumulado -= aresta->getPeso();
     }
 
-    caminho.pop_back(); 
-    return minimo_custo_excedido;
+    return min;
 }
 
-bool buscaIDAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, 
-    int *nos_expandidos, int *nos_visitados, int *profundidade_solucao, 
-    float *custo_solucao, std::vector<int>& caminho_solucao) {
-
-    float limite_custo = heuristicaMenorPesoArestaAdjacente(grafo, cidade_origem, cidade_destino); 
-
-    while (true) {
-        vector<int> caminho;
-        float custo_excedido = dfs_limitada_com_custo(grafo, cidade_origem, cidade_destino, caminho_solucao, 
-            0.0f, limite_custo, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao);
-
-        if (custo_excedido != numeric_limits<float>::infinity()) {
-            return true; // Solução encontrada 
-        }
-
-        if (custo_excedido == numeric_limits<float>::infinity()) {
-            return false; // Não existe solução
-        }
-
-        limite_custo = custo_excedido; 
-    }
-}
 //====================================================================================================
 //                                          impressão métricas
 //====================================================================================================
@@ -389,8 +401,9 @@ void escreverMetricas(const string& nome_busca, const vector<int>& caminho, int 
 
         // Escreve os dados da busca no formato CSV
         arquivoSaida << nome_busca << ",";
+        
         if (!caminho.empty()) {
-            for (int i = 0; i < caminho.size(); ++i) {
+            for (size_t i = 0; i < caminho.size(); ++i) {
                 arquivoSaida << caminho[i];
                 if (i < caminho.size() - 1) {
                     arquivoSaida << "-"; // Separador para as cidades no caminho
@@ -400,11 +413,12 @@ void escreverMetricas(const string& nome_busca, const vector<int>& caminho, int 
         } else {
             arquivoSaida << "null,null,null,"; 
         }
+
         arquivoSaida << nos_expandidos << "," << nos_visitados << ",";
 
         float fatorRamificacaoMedio = 0;
-        if (nos_expandidos != 0) {
-            fatorRamificacaoMedio = (float)nos_visitados / nos_expandidos;
+        if (nos_expandidos > 0) {
+            fatorRamificacaoMedio = static_cast<float>(nos_visitados) / nos_expandidos;
         }
         arquivoSaida << fatorRamificacaoMedio << "\n";
 
@@ -413,6 +427,7 @@ void escreverMetricas(const string& nome_busca, const vector<int>& caminho, int 
         cout << "Erro ao abrir o arquivo de saída!" << endl;
     }
 }
+
 
 //====================================================================================================
 //                                          Função gerar tipos de mapas diferentes
@@ -423,7 +438,7 @@ Grafo* criaGrafo(int tipo) {
 
     if (tipo == 1) {
         // Grafo maior com cerca de 20 nós
-        vector<tuple<int, int, float>> conexoes = {
+        vector<tuple<int, int, int>> conexoes = {
             {0, 1, 7}, {0, 3, 2}, {1, 2, 3}, {1, 4, 5}, {2, 5, 8},
             {3, 6, 4}, {4, 7, 6}, {5, 8, 2}, {6, 9, 9}, {7, 10, 1},
             {8, 11, 3}, {9, 12, 7}, {10, 13, 5}, {11, 14, 4}, {12, 15, 6},
@@ -431,25 +446,23 @@ Grafo* criaGrafo(int tipo) {
         };
 
         for (const auto& conexao : conexoes) {
-            int origem, destino;
-            float peso;
+            int origem, destino, peso;
             tie(origem, destino, peso) = conexao;
             grafo->insertAresta(origem, 0, destino, 0, peso); 
         }
 
     } else if (tipo == 2) {
-      
         int num_nos = 12;
 
-        //variávies para randomizar e possibilitar que crie de forma aleatória as cidades
+        //variáveis para randomizar e possibilitar que crie de forma aleatória as cidades
         random_device rd;
         mt19937 gen(rd());
-        uniform_real_distribution<> dis(0.0, 1.0);
+        uniform_int_distribution<> dis(1, 10); // Peso entre 1 e 10
 
         for (int i = 0; i < num_nos; ++i) {
             for (int j = i + 1; j < num_nos; ++j) {
-                if (dis(gen) < 0.7) { // Probabilidade de 70% de criar uma aresta
-                    float peso = 1.0 + dis(gen) * 9.0; // Peso entre 1.0 e 10.0
+                if (dis(gen) <= 7) { // Probabilidade de 70% de criar uma aresta
+                    int peso = dis(gen); // Peso inteiro
                     grafo->insertAresta(i, 0, j, 0, peso);
                 }
             }
@@ -458,15 +471,16 @@ Grafo* criaGrafo(int tipo) {
     } else if (tipo == 3) {
         // Grafo esparso 
         int num_nos = 15;
-        //variávies para randomizar e possibilitar que crie de forma aleatória as cidades
+
+        //variáveis para randomizar e possibilitar que crie de forma aleatória as cidades
         random_device rd;
         mt19937 gen(rd());
-        uniform_real_distribution<> dis(0.0, 1.0);
+        uniform_int_distribution<> dis(1, 10); // Peso entre 1 e 10
 
         for (int i = 0; i < num_nos; ++i) {
             for (int j = i + 1; j < num_nos; ++j) {
-                if (dis(gen) < 0.3) { // Probabilidade de 30% de criar uma aresta
-                    float peso = 1.0 + dis(gen) * 9.0; // Peso entre 1.0 e 10.0
+                if (dis(gen) <= 3) { // Probabilidade de 30% de criar uma aresta
+                    int peso = dis(gen); // Peso inteiro
                     grafo->insertAresta(i, 0, j, 0, peso);
                 }
             }

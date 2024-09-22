@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
         return 1; // Indica um erro na criação do grafo
     }
 
+    grafo_cidades->print();
     int cidade_origem = 0; 
     int cidade_destino = 4; 
     int limite_profundidade = 5;
@@ -241,10 +242,33 @@ int main(int argc, char *argv[]) {
     } else if (opcao == 6) {
         // Executar a busca IDA*
         vector<long long> tempos_execucao;
+        long long total_nos_expandidos = 0;
+        long long total_nos_visitados = 0;
+        int maior_profundidade = -1; // Inicializando em -1 para refletir a profundidade correta
+        float menor_custo = numeric_limits<float>::infinity(); // Inicializando com infinito
+
         for (int i = 0; i < numExecs; ++i) {
+            // Zerar as variáveis para cada execução
+            nos_expandidos = 0;
+            nos_visitados = 0;
+            profundidade_solucao = -1; // Para indicar que ainda não foi encontrado
+            custo_solucao = numeric_limits<float>::infinity(); // Para indicar que não foi encontrado
+
             auto inicio = high_resolution_clock::now();
-            if (buscaIDAEstrela(grafo_cidades, cidade_origem, cidade_destino, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
-                cout << "Caminho encontrado" << endl;
+            if (buscaIDAEstrela(grafo_cidades, cidade_origem, cidade_destino, 
+                    &nos_expandidos, &nos_visitados, &profundidade_solucao, 
+                    &custo_solucao, caminho_solucao)) {
+                // Atualiza os totais
+                total_nos_expandidos += nos_expandidos;
+                total_nos_visitados += nos_visitados;
+
+                if (profundidade_solucao > 0) { // Verifica se a profundidade foi alterada
+                    maior_profundidade = max(maior_profundidade, profundidade_solucao);
+                }
+
+                if (custo_solucao < numeric_limits<float>::infinity()) { // Verifica se o custo foi atualizado
+                    menor_custo = min(menor_custo, custo_solucao);
+                }
             } else {
                 cout << "\nNão existe caminho entre as cidades (usando Busca IDA*)." << endl;
             }
@@ -253,22 +277,24 @@ int main(int argc, char *argv[]) {
             tempos_execucao.push_back(duracao.count());
         }
 
-
-
         // Calcular e imprimir a média dos tempos de execução
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
-        double tempo_medio = (double)tempo_total / numExecs;
-        cout << "Tempo médio de execução (Backtracking): " << tempo_medio << " microssegundos" << endl;
+        double tempo_medio = static_cast<double>(tempo_total) / numExecs;
+        cout << "Tempo médio de execução (IDA*): " << tempo_medio << " microssegundos" << endl;
+
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
 
-        if (arquivoSaida.is_open()){
-            escreveCSV("IDA*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+        if (arquivoSaida.is_open()) {
+            // Escreve os totais acumulados e a média dos tempos
+            escreveCSV("IDA*", arquivoSaida, total_nos_expandidos, total_nos_visitados, 
+                maior_profundidade, (menor_custo == numeric_limits<float>::infinity() ? 0 : menor_custo), 
+                caminho_solucao, tempo_medio);
             arquivoSaida.close();
-        }else
+        } else {
             cout << "Erro ao abrir o arquivo." << endl;
-        // Adicionando nova opção para executar todos os algoritmos em sequência
-        
-        // Adicionando nova opção para executar todos os algoritmos em sequência
+        }
+
+    
     }else if (opcao == 7) {
         // Backtracking
         nos_expandidos = 0;
