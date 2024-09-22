@@ -164,6 +164,62 @@ float heuristicaMenorPesoArestaAdjacente(Grafo* grafo, int cidade_atual, int cid
     return menor_peso;
 }
 
+//====================================================================================================
+//                                              Ordenada
+//====================================================================================================
+bool buscaOrdenada(Grafo* grafo, int cidade_atual, int cidade_destino,
+                   std::vector<int>& caminho, float& custo_acumulado, 
+                   int *nos_expandidos, int *nos_visitados, int *profundidade_solucao,
+                   float *custo_solucao, std::vector<int>& caminho_solucao) {
+
+    *nos_visitados += 1;
+    caminho.push_back(cidade_atual);
+
+    if (cidade_atual == cidade_destino) {
+        *profundidade_solucao = caminho.size() - 1;
+        caminho_solucao = caminho;
+        *custo_solucao = custo_acumulado;
+        return true;
+    }
+
+    No* no_atual = grafo->auxProcurarNoPeloId(cidade_atual);
+    if (no_atual == nullptr) {
+        return false;
+    }
+
+    *nos_expandidos += 1;
+
+    // Ordenar os vizinhos pela heurística (menor peso da aresta)
+    vector<pair<int, float>> vizinhos_ordenados;
+    for (Aresta* aresta = no_atual->getPrimeiraAresta(); aresta != nullptr; aresta = aresta->getProxAresta()) {
+        int proxima_cidade = aresta->getNoDestino();
+        float peso_aresta = aresta->getPeso();
+        vizinhos_ordenados.push_back({proxima_cidade, peso_aresta});
+    }
+    sort(vizinhos_ordenados.begin(), vizinhos_ordenados.end(), 
+         [](const pair<int, float>& a, const pair<int, float>& b) { 
+             return a.second < b.second; 
+         });
+
+    for (const auto& vizinho : vizinhos_ordenados) {
+        int proxima_cidade = vizinho.first;
+        float peso_aresta = vizinho.second;
+
+        if (find(caminho.begin(), caminho.end(), proxima_cidade) == caminho.end()) {
+            custo_acumulado += peso_aresta;
+
+            if (buscaOrdenada(grafo, proxima_cidade, cidade_destino, caminho, custo_acumulado, 
+                              nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao)) {
+                return true;
+            }
+
+            custo_acumulado -= peso_aresta;
+        }
+    }
+
+    caminho.pop_back();
+    return false;
+}
 
 //====================================================================================================
 //                                              Gulosa

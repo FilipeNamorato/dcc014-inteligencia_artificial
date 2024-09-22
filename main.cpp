@@ -12,18 +12,33 @@ using  std::string;
 using namespace std::chrono;
 
 
-void escreveCSV(string nomeMetodo, ofstream &arquivoSaida, int nos_expandidos, int nos_visitados, 
+void escreveCSV(int tipoMapa, bool primeiraVez, string nomeMetodo, ofstream &arquivoSaida, int nos_expandidos, int nos_visitados, 
                 int profundidade_solucao, float custo_solucao, const vector<int>& caminho_solucao, 
                 float tempo_medio){
     
-    // Escreve cabeçalho se necessário (opcional, apenas na primeira vez)
-    arquivoSaida << "Algoritmo,Nos_Expandidos,Nos_Visitados,Profundidade_Solucao,Custo_Solucao,Caminho_Solucao,Tempo_Medio" << endl;
+    if(primeiraVez){
+        // Escreve cabeçalho se necessário (opcional, apenas na primeira vez)
+        arquivoSaida << "Mapa,Algoritmo,Nos Expandidos,Nos Visitados,Profundidade,Fator medio de ramificacao,Custo,Caminho,Tempo Medio" << endl;
+    }
+    string mapa;
+    if (tipoMapa==1)
+        mapa = "Grande";
+    else if(tipoMapa==2)
+        mapa = "Densa";
+    else if(tipoMapa==3)
+        mapa  = "Esparsa";
 
+    float fatorRamificacaoMedio = 0;
+    if (nos_expandidos != 0)
+        fatorRamificacaoMedio = (float)nos_visitados / nos_expandidos;
+        
     // Escreve os dados
-    arquivoSaida << nomeMetodo << ","
+    arquivoSaida << mapa << ","
+                 << nomeMetodo << ","
                  << nos_expandidos << ","
                  << nos_visitados << ","
                  << profundidade_solucao << ","
+                 << fatorRamificacaoMedio << ","
                  << custo_solucao << ",\"";
 
     // Escreve o caminho (os valores do vector)
@@ -75,12 +90,14 @@ int main(int argc, char *argv[]) {
     cout << "1 - Busca em backtracking" << endl;
     cout << "2 - Busca em Largura" << endl;
     cout << "3 - Busca em Profundidade Limitada" << endl;
-    cout << "4 - Busca Gulosa" << endl;
-    cout << "5 - Busca A*" << endl;
-    cout << "6 - Busca IDA*" << endl;
-    cout << "7 - Todos os métodos" << endl;
+    cout << "4 - Busca Ordenada" << endl; // Nova opção
+    cout << "5 - Busca Gulosa" << endl;
+    cout << "6 - Busca A*" << endl;
+    cout << "7 - Busca IDA*" << endl;
+    cout << "8 - Todos os métodos" << endl; // Opção 7 movida para 8
     cout << "Sua escolha: ";
     cin >> opcao;
+
 
     int numExecs = 100;
 
@@ -108,7 +125,6 @@ int main(int argc, char *argv[]) {
             tempos_execucao.push_back(duracao.count());
         }
 
-
         // Calcular e imprimir a média dos tempos de execução
         long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
         double tempo_medio = (double)tempo_total / numExecs;
@@ -116,7 +132,7 @@ int main(int argc, char *argv[]) {
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
 
         if (arquivoSaida.is_open()){
-            escreveCSV("Backtracking", arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo,true ,"Backtracking", arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         }else
             cout << "Erro ao abrir o arquivo." << endl;
@@ -143,7 +159,7 @@ int main(int argc, char *argv[]) {
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
 
         if (arquivoSaida.is_open()){
-            escreveCSV("Busca em Largura",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, true, "Busca em Largura",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         }else
             cout << "Erro ao abrir o arquivo." << endl;
@@ -155,7 +171,6 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < numExecs; ++i) {
             auto inicio = high_resolution_clock::now();
 
-            // Corrigido: passando todos os parâmetros esperados para buscaProfundidade
             if (buscaProfundidade(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, custo_acumulado, 0, limite_profundidade, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
                 
                 // Você pode exibir ou usar os resultados como necessário
@@ -177,12 +192,40 @@ int main(int argc, char *argv[]) {
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
 
         if (arquivoSaida.is_open()){
-            escreveCSV("Busca em Profundidade Limitada",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, true, "Busca em Profundidade Limitada",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         }else
             cout << "Erro ao abrir o arquivo." << endl;
+            
+    } else if (opcao == 4) { 
+        // Executar a Busca Ordenada
+        vector<long long> tempos_execucao;
+        for (int i = 0; i < numExecs; ++i) {
+            caminho_solucao.clear();
+            auto inicio = high_resolution_clock::now();
+            if (buscaOrdenada(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, custo_acumulado, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
+            } else {
+                cout << "\nNão existe caminho entre as cidades (usando Busca Ordenada)." << endl;
+            }
+            auto fim = high_resolution_clock::now();
+            auto duracao = duration_cast<microseconds>(fim - inicio);
+            tempos_execucao.push_back(duracao.count());
+        }
 
-    } else if (opcao == 4) {
+        // Calcular e imprimir a média dos tempos de execução
+        long long tempo_total = accumulate(tempos_execucao.begin(), tempos_execucao.end(), 0LL);
+        double tempo_medio = (double)tempo_total / numExecs;
+        cout << "Tempo médio de execução (Busca Ordenada): " << tempo_medio << " microssegundos" << endl;
+
+        ofstream arquivoSaida("resultados_busca.csv", ios::app); 
+        if (arquivoSaida.is_open()){
+            escreveCSV(tipo_grafo, true, "Busca Ordenada", arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        } else {
+            cout << "Erro ao abrir o arquivo." << endl;
+        }
+
+    } else if (opcao == 5) {
         // Executar a busca Gulosa
         vector<long long> tempos_execucao;
         for (int i = 0; i < numExecs; ++i) {
@@ -206,12 +249,12 @@ int main(int argc, char *argv[]) {
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
 
         if (arquivoSaida.is_open()){
-            escreveCSV("Busca Gulosa",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, true, "Busca Gulosa",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         }else
             cout << "Erro ao abrir o arquivo." << endl;
 
-    } else if (opcao == 5) {
+    } else if (opcao == 6) {
         // Executar a busca A*
         vector<long long> tempos_execucao;
         for (int i = 0; i < numExecs; ++i) {
@@ -234,12 +277,12 @@ int main(int argc, char *argv[]) {
         ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
 
         if (arquivoSaida.is_open()){
-            escreveCSV("A*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, true, "A*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         }else
             cout << "Erro ao abrir o arquivo." << endl;
 
-    } else if (opcao == 6) {
+    } else if (opcao == 7) {
         // Executar a busca IDA*
         vector<long long> tempos_execucao;
         long long total_nos_expandidos = 0;
@@ -286,7 +329,7 @@ int main(int argc, char *argv[]) {
 
         if (arquivoSaida.is_open()) {
             // Escreve os totais acumulados e a média dos tempos
-            escreveCSV("IDA*", arquivoSaida, total_nos_expandidos, total_nos_visitados, 
+            escreveCSV(tipo_grafo, true, "IDA*", arquivoSaida, total_nos_expandidos, total_nos_visitados, 
                 maior_profundidade, (menor_custo == numeric_limits<float>::infinity() ? 0 : menor_custo), 
                 caminho_solucao, tempo_medio);
             arquivoSaida.close();
@@ -295,7 +338,7 @@ int main(int argc, char *argv[]) {
         }
 
     
-    }else if (opcao == 7) {
+    }else if (opcao == 8) {
         // Backtracking
         nos_expandidos = 0;
         nos_visitados = 0;
@@ -319,7 +362,7 @@ int main(int argc, char *argv[]) {
         // Salvar no CSV
         ofstream arquivoSaida("resultados_busca.csv", ios::app);
         if (arquivoSaida.is_open()) {
-            escreveCSV("Backtracking",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, true,"Backtracking",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         } else {
             cout << "Erro ao abrir o arquivo." << endl;
@@ -348,7 +391,7 @@ int main(int argc, char *argv[]) {
         // Salvar no CSV
         arquivoSaida.open("resultados_busca.csv", ios::app);
         if (arquivoSaida.is_open()) {
-            escreveCSV("Busca em Largura", arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, false, "Busca em Largura", arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         } else {
             cout << "Erro ao abrir o arquivo." << endl;
@@ -377,12 +420,40 @@ int main(int argc, char *argv[]) {
         // Salvar no CSV
         arquivoSaida.open("resultados_busca.csv", ios::app);
         if (arquivoSaida.is_open()) {
-            escreveCSV("Busca em Profundidade Limitada",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, false, "Busca em Profundidade Limitada",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         } else {
             cout << "Erro ao abrir o arquivo." << endl;
         }
 
+            // Busca Ordenada
+        nos_expandidos = 0;
+        nos_visitados = 0;
+        profundidade_solucao = 0;
+        custo_solucao = 0.0;
+
+        inicio = high_resolution_clock::now();
+        for (int i = 0; i < numExecs; ++i) {
+            caminho_solucao.clear();
+            if (buscaOrdenada(grafo_cidades, cidade_origem, cidade_destino, caminho_solucao, custo_acumulado, &nos_expandidos, &nos_visitados, &profundidade_solucao, &custo_solucao, caminho_solucao)) {
+                // ... (código para exibir ou usar os resultados)
+            } else {
+                cout << "\nNão existe caminho entre as cidades (Busca Ordenada)." << endl;
+            }
+        }
+        fim = high_resolution_clock::now();
+        duracao = duration_cast<microseconds>(fim - inicio);
+        tempo_medio = duracao.count() / (double)numExecs;
+        cout << "Tempo médio de execução (Busca Ordenada): " << tempo_medio << " microssegundos" << endl;
+
+        // Salvar no CSV
+        arquivoSaida.open("resultados_busca.csv", ios::app);
+        if (arquivoSaida.is_open()) {
+            escreveCSV(tipo_grafo, false, "Busca Ordenada", arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            arquivoSaida.close();
+        }else 
+            cout << "Erro ao abrir o arquivo." << endl;
+        
         // Busca Gulosa
         nos_expandidos = 0;
         nos_visitados = 0;
@@ -406,7 +477,7 @@ int main(int argc, char *argv[]) {
         // Salvar no CSV
         arquivoSaida.open("resultados_busca.csv", ios::app);
         if (arquivoSaida.is_open()) {
-            escreveCSV("Busca Gulosa" ,arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, false, "Busca Gulosa" ,arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         } else {
             cout << "Erro ao abrir o arquivo." << endl;
@@ -435,7 +506,7 @@ int main(int argc, char *argv[]) {
         // Salvar no CSV
         arquivoSaida.open("resultados_busca.csv", ios::app);
         if (arquivoSaida.is_open()) {
-            escreveCSV("A*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, false, "A*",arquivoSaida, nos_expandidos, nos_visitados, profundidade_solucao, custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         } else {
             cout << "Erro ao abrir o arquivo." << endl;
@@ -471,7 +542,7 @@ int main(int argc, char *argv[]) {
         // Salvar no CSV
         arquivoSaida.open("resultados_busca.csv", ios::app);
         if (arquivoSaida.is_open()) {
-            escreveCSV("IDA*",arquivoSaida, total_nos_expandidos, total_nos_visitados, total_profundidade_solucao, total_custo_solucao, caminho_solucao, tempo_medio);
+            escreveCSV(tipo_grafo, false, "IDA*",arquivoSaida, total_nos_expandidos, total_nos_visitados, total_profundidade_solucao, total_custo_solucao, caminho_solucao, tempo_medio);
             arquivoSaida.close();
         }else 
             cout << "Erro ao abrir o arquivo." << endl;

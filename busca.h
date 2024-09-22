@@ -14,6 +14,11 @@ bool buscaProfundidade(Grafo* grafo, int cidade_atual, int cidade_destino,
     int limite_profundidade, int *nos_expandidos, int *nos_visitados, 
     int *profundidade_solucao, float *custo_solucao, std::vector<int>& caminho_solucao);
 
+bool buscaOrdenada(Grafo* grafo, int cidade_atual, int cidade_destino,
+    std::vector<int>& caminho, float& custo_acumulado, 
+    int *nos_expandidos, int *nos_visitados, int *profundidade_solucao,
+    float *custo_solucao, std::vector<int>& caminho_solucao);
+
 bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino, 
     int *nos_expandidos, int *nos_visitados, int *profundidade_solucao, 
     float *custo_solucao, std::vector<int>& caminho_solucao);
