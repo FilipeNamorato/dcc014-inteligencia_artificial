@@ -40,8 +40,7 @@ float buscaIDAEstrelaAux(Grafo* grafo, int cidade_atual, int cidade_destino,
 float heuristicaMenorPesoArestaAdjacente(Grafo* grafo, int cidade_atual, int cidade_destino);
 
 //impressão
-void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo);
-void escreverMetricas(const string& nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo);
+void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo, double tempo_medio);
 
 //auxiliares
 Grafo* criaGrafo(int tipo);

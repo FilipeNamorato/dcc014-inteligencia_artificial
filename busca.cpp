@@ -168,9 +168,9 @@ float heuristicaMenorPesoArestaAdjacente(Grafo* grafo, int cidade_atual, int cid
 //                                              Ordenada
 //====================================================================================================
 bool buscaOrdenada(Grafo* grafo, int cidade_atual, int cidade_destino,
-                   std::vector<int>& caminho, float& custo_acumulado, 
-                   int *nos_expandidos, int *nos_visitados, int *profundidade_solucao,
-                   float *custo_solucao, std::vector<int>& caminho_solucao) {
+    std::vector<int>& caminho, float& custo_acumulado, 
+    int *nos_expandidos, int *nos_visitados, int *profundidade_solucao,
+    float *custo_solucao, std::vector<int>& caminho_solucao) {
 
     *nos_visitados += 1;
     caminho.push_back(cidade_atual);
@@ -283,7 +283,6 @@ bool buscaGulosa(Grafo* grafo, int cidade_origem, int cidade_destino,
 //====================================================================================================
 //                                              A*
 //====================================================================================================
-// Função para encontrar o caminho usando a busca A*
 bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, 
     int *nos_expandidos, int *nos_visitados, int *profundidade_solucao, 
     float *custo_solucao, std::vector<int>& caminho_solucao) {
@@ -337,10 +336,9 @@ bool buscaAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino,
 //====================================================================================================
 //                                              IDA*
 //====================================================================================================
-
 bool buscaIDAEstrela(Grafo* grafo, int cidade_origem, int cidade_destino, 
-                     int *nos_expandidos, int *nos_visitados, int *profundidade_solucao, 
-                     float *custo_solucao, std::vector<int>& caminho_solucao) {
+                    int *nos_expandidos, int *nos_visitados, int *profundidade_solucao, 
+                    float *custo_solucao, std::vector<int>& caminho_solucao) {
 
     float limite = heuristicaMenorPesoArestaAdjacente(grafo, cidade_origem, cidade_destino); 
     vector<int> caminho = {cidade_origem};
@@ -420,8 +418,7 @@ float buscaIDAEstrelaAux(Grafo* grafo, int cidade_atual, int cidade_destino,
 //====================================================================================================
 //                                          impressão métricas
 //====================================================================================================
-
-void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo) {
+void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo, double tempo_medio) {
     cout << "\nResultados da " << nome_busca << ":" << endl;
     if (!caminho.empty()) {
         cout << "Caminho encontrado: ";
@@ -442,53 +439,15 @@ void imprimirMetricas(string nome_busca, const vector<int>& caminho, int nos_exp
         fatorRamificacaoMedio = (float)nos_visitados / nos_expandidos;
         
     cout << "Fator de ramificação médio: " << fatorRamificacaoMedio << endl;
+
+    cout << "Tempo médio: " << tempo_medio<<endl;
 }
 
-void escreverMetricas(const string& nome_busca, const vector<int>& caminho, int nos_expandidos, int nos_visitados, int profundidade, float custo) {
-    ofstream arquivoSaida("resultados_busca.csv", ios::app); // Abre o arquivo em modo append
-
-    if (arquivoSaida.is_open()) {
-        // Escreve o cabeçalho apenas na primeira vez que a função é chamada
-        static bool primeiraChamada = true;
-        if (primeiraChamada) {
-            arquivoSaida << "Algoritmo,Caminho,Profundidade,Custo,NosExpandidos,NosVisitados,FatorRamificacaoMedio\n";
-            primeiraChamada = false;
-        }
-
-        // Escreve os dados da busca no formato CSV
-        arquivoSaida << nome_busca << ",";
-        
-        if (!caminho.empty()) {
-            for (size_t i = 0; i < caminho.size(); ++i) {
-                arquivoSaida << caminho[i];
-                if (i < caminho.size() - 1) {
-                    arquivoSaida << "-"; // Separador para as cidades no caminho
-                }
-            }
-            arquivoSaida << "," << profundidade << "," << custo << ",";
-        } else {
-            arquivoSaida << "null,null,null,"; 
-        }
-
-        arquivoSaida << nos_expandidos << "," << nos_visitados << ",";
-
-        float fatorRamificacaoMedio = 0;
-        if (nos_expandidos > 0) {
-            fatorRamificacaoMedio = static_cast<float>(nos_visitados) / nos_expandidos;
-        }
-        arquivoSaida << fatorRamificacaoMedio << "\n";
-
-        arquivoSaida.close();
-    } else {
-        cout << "Erro ao abrir o arquivo de saída!" << endl;
-    }
-}
 
 
 //====================================================================================================
 //                                          Função gerar tipos de mapas diferentes
 //====================================================================================================
-
 Grafo* criaGrafo(int tipo) {
     Grafo* grafo = new Grafo(false, true, false); // Grafo não direcionado com pesos nas arestas
 
